@@ -34,13 +34,23 @@ public class MFQ extends Scheduler{
     public void addProcess(Process p){
        //Overwriting the parent's addProcess(Process p) method may be necessary in order to decide what to do with process coming from the CPU. Another option is to uncomment and use
        // the method CPUReturningProcess(boolean cpuEmpty) on the Scheduler class and use that to manage what happens with the process. It is your choise.
+       int scheduler_idx = Math.min(currentScheduler + 1, schedulers.size() - 1);
+       schedulers.get(scheduler_idx).addProcess(p);
     }
     
    
     @Override
     public void getNext(boolean cpuEmpty) {
-        
-        
+        int scheduler_idx = Math.min(currentScheduler + 1, schedulers.size() - 1);
+        Scheduler s = schedulers.get(scheduler_idx);
+
+        if (scheduler_idx != schedulers.size() - 1 && s.isEmpty()) {
+            currentScheduler++;
+            scheduler_idx++;
+            s = schedulers.get(scheduler_idx);
+        }
+
+        s.getNext(cpuEmpty);
     }
     
     @Override
