@@ -13,6 +13,13 @@ import java.util.Random;
  * @author super
  */
 public class SystemOS implements Runnable{
+    private float cpu_utilization = 0; 
+    private float throughput = 0;
+    private float turnaround_time = 0;
+    private float waiting_time = 0;
+
+    private int empty_cpu_counter = 0;
+
     
     private static int clock = 0;
     private static final int MAX_SIM_CYCLES = 1000;
@@ -37,6 +44,7 @@ public class SystemOS implements Runnable{
         //initSimulationQueue();
         //initSimulationQueueSimple();
         initSimulationQueueSimpler();
+        initMetrics();
         showProcesses();
     }
     
@@ -130,6 +138,12 @@ public class SystemOS implements Runnable{
         
         clock = 0;
     }
+
+    private void initMetrics() {
+        for (Process p: processes) {
+            waiting_time -= p.getRemainingTimeInCurrentBurst();
+        }
+    }
     
     public boolean isSimulationFinished(){
         
@@ -191,9 +205,33 @@ public class SystemOS implements Runnable{
             
             i++;
             clock++;
+
+            if (temp_exec != null) {
+                if (temp_exec.isFinished()) {
+                    float tmp = clock - temp_exec.time_init;
+                    turnaround_time += tmp;
+                    waiting_time += tmp;
+                }
+                
+                if (os.isCPUEmpty() && !temp_exec.isFinished()) {
+                    empty_cpu_counter++;
+                }
+            }
         }
         System.out.println("******SIMULATION FINISHES******");
         //os.showProcesses();
+
+        // ------------- CRITERIAS ------------
+        cpu_utilization = (float) (clock - empty_cpu_counter) / clock * 100;
+        throughput = (float) processes.size() / clock;
+        turnaround_time = (float) turnaround_time / processes.size();
+        waiting_time = (float) waiting_time / processes.size();
+
+        System.out.println("CPU UTILIZATION: " + cpu_utilization);
+        System.out.println("THROUGHPUT: " + throughput);
+        System.out.println("AVG. TURNAROUND_TIME: " + turnaround_time);
+        System.out.println("AVG. WAITING TIME: " + waiting_time);
+        // ------------------------------------
         
         System.out.println("******Process Execution******");
         for (Integer num : execution) {
