@@ -4,7 +4,6 @@
  */
 package ur_os;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 
 /**
@@ -19,7 +18,7 @@ public abstract class Scheduler {
     
     public Scheduler(OS os){
         this.os = os;
-        processes = new LinkedList();
+        processes = new LinkedList<>();
     }
 
     public void getNext(){

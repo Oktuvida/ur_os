@@ -5,8 +5,6 @@
  */
 package ur_os;
 
-import java.util.ArrayList;
-
 /**
  *
  * @author super
@@ -32,7 +30,7 @@ public class ReadyQueue {
     }
     
     public ReadyQueue(OS OS, Scheduler s){
-        this.os = os;
+        this.os = OS;
         this.s = s;
     }
     

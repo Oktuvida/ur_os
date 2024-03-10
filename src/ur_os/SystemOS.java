@@ -6,9 +6,7 @@
 package ur_os;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Random;
-import java.util.Set;
 
 /**
  *
@@ -34,8 +32,8 @@ public class SystemOS implements Runnable{
         os = new OS(this, cpu, ioq);
         cpu.setOS(os);
         ioq.setOS(os);
-        execution = new ArrayList();
-        processes = new ArrayList();
+        execution = new ArrayList<>();
+        processes = new ArrayList<>();
         //initSimulationQueue();
         //initSimulationQueueSimple();
         initSimulationQueueSimpler();
@@ -47,7 +45,7 @@ public class SystemOS implements Runnable{
     }
     
     public ArrayList<Process> getProcessAtI(int i){
-        ArrayList<Process> ps = new ArrayList();
+        ArrayList<Process> ps = new ArrayList<>();
         
         for (Process process : processes) {
             if(process.getTime_init() == i){
@@ -148,7 +146,6 @@ public class SystemOS implements Runnable{
     
     @Override
     public void run() {
-        double tp;
         ArrayList<Process> ps;
         
         System.out.println("******SIMULATION START******");

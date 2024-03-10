@@ -21,7 +21,7 @@ public class MFQ extends Scheduler{
     MFQ(OS os){
         super(os);
         currentScheduler = -1;
-        schedulers = new ArrayList();
+        schedulers = new ArrayList<>();
     }
     
     MFQ(OS os, Scheduler... s){ //Received multiple arrays

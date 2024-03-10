@@ -14,7 +14,7 @@ public class PruebaArray {
     
     
     public static void main(String[] args){
-        ArrayList<Double> enteros = new ArrayList();
+        ArrayList<Double> enteros = new ArrayList<>();
         
         for (int i = 0; i < 10; i++) {
             enteros.add((double)i);

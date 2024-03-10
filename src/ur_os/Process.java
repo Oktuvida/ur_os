@@ -9,6 +9,7 @@ package ur_os;
  *
  * @author super
  */
+@SuppressWarnings("rawtypes")
 public class Process implements Comparable{
     public static final int NUM_CPU_CYCLES = 3;
     public static final int MAX_CPU_CYCLES = 10;

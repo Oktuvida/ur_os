@@ -20,7 +20,7 @@ public class ProcessBurstList {
     boolean finished;
 
     public ProcessBurstList() {
-        bursts = new ArrayList();
+        bursts = new ArrayList<>();
         r = new Random();
         this.currentBurst = 0;
         finished = false;
