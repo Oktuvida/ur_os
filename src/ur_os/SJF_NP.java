@@ -19,9 +19,13 @@ public class SJF_NP extends Scheduler {
         if (!processes.isEmpty() && cpuEmpty) {
 
             Process p = processes.get(0);
+            Process tmp_p;
             for (int i = 1; i < processes.size(); i++) {
-                if (processes.get(i).getRemainingTimeInCurrentBurst() < p.getRemainingTimeInCurrentBurst()) {
-                    p = processes.get(i);
+                tmp_p = processes.get(i);
+                if (tmp_p.getRemainingTimeInCurrentBurst() < p.getRemainingTimeInCurrentBurst()) {
+                    p = tmp_p;
+                } else if (tmp_p.getRemainingTimeInCurrentBurst() == p.getRemainingTimeInCurrentBurst() && tmp_p.getPid() < p.getPid()) {
+                    p = tmp_p;
                 }
             }
             processes.remove(p);
