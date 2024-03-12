@@ -35,12 +35,12 @@ public class RoundRobin extends Scheduler{
                     p = processes.remove();
                 }
                 os.interrupt(InterruptType.SCHEDULER_CPU_TO_RQ, p);
-                cont = 0;
+                cont = 1;
             }
         } else if (!processes.isEmpty()) {
             Process p = processes.remove();
             os.interrupt(InterruptType.SCHEDULER_RQ_TO_CPU, p);
-            cont = 0;
+            cont = 1;
         }
     }
     
