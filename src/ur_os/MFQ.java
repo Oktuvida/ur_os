@@ -1,62 +1,68 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package ur_os;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
-/**
- *
- * @author prestamour
- */
-public class MFQ extends Scheduler{
-
+public class MFQ extends Scheduler {
+    ArrayList<Scheduler> schedulers;
     int currentScheduler;
-    private ArrayList<Scheduler> schedulers;
-    //This may be a suggestion... you may use the current sschedulers to create the Multilevel Feedback Queue, or you may go with a more tradicional way
-    //based on implementing all the queues in this class... it is your choice. Change all you need in this class.
-    
-    MFQ(OS os){
+
+    public MFQ(OS os) {
         super(os);
-        currentScheduler = -1;
         schedulers = new ArrayList<>();
+        currentScheduler = -1;
     }
-    
-    MFQ(OS os, Scheduler... s){ //Received multiple arrays
+
+    public MFQ(OS os, Scheduler... schedulers) {
         this(os);
-        schedulers.addAll(Arrays.asList(s));
+        this.schedulers.addAll(Arrays.asList(schedulers));
+        if (this.schedulers.size() > 0) {
+            currentScheduler = 0;
+        }
     }
-    
-    
-    @Override
-    public void addProcess(Process p){
-       //Overwriting the parent's addProcess(Process p) method may be necessary in order to decide what to do with process coming from the CPU. Another option is to uncomment and use
-       // the method CPUReturningProcess(boolean cpuEmpty) on the Scheduler class and use that to manage what happens with the process. It is your choise.
-       int scheduler_idx = Math.min(currentScheduler + 1, schedulers.size() - 1);
-       schedulers.get(scheduler_idx).addProcess(p);
-    }
-    
-   
+
     @Override
     public void getNext(boolean cpuEmpty) {
-        int scheduler_idx = Math.min(currentScheduler + 1, schedulers.size() - 1);
-        Scheduler s = schedulers.get(scheduler_idx);
-
-        if (scheduler_idx != schedulers.size() - 1 && s.isEmpty()) {
-            currentScheduler++;
-            scheduler_idx++;
-            s = schedulers.get(scheduler_idx);
+        if (cpuEmpty) {
+            defineCurrentScheduler();
         }
-
-        s.getNext(cpuEmpty);
+        schedulers.get(currentScheduler).getNext(cpuEmpty);
+        if (os.isCPUEmpty()) {
+            defineCurrentScheduler();
+            schedulers.get(currentScheduler).getNext(true);
+        }
     }
-    
-    @Override
-    public void newProcess(boolean cpuEmpty) {} //It's empty because it is Non-preemptive
+
+    void defineCurrentScheduler() {
+        for (int i = 0; i < schedulers.size(); i++) {
+            Scheduler s = schedulers.get(i);
+            if (!s.isEmpty()) {
+                currentScheduler = i;
+                return;
+            }
+        }
+    }
 
     @Override
-    public void IOReturningProcess(boolean cpuEmpty) {} //It's empty because it is Non-preemptive
-    
+    public void addProcess(Process p) {
+        ProcessState ps = p.getState();
+        int idx = p.getCurrentScheduler();
+        if (ps == ProcessState.CPU) {
+            idx = Math.min(idx + 1, schedulers.size() - 1);
+            p.setCurrentScheduler(idx);
+        } 
+        else if (ps == ProcessState.IO) {
+            idx = 0;
+            p.setCurrentScheduler(idx);
+        }
+        schedulers.get(idx).addProcess(p);
+    }
+
+    @Override
+    public void newProcess(boolean cpuEmpty) {
+    }
+
+    @Override
+    public void IOReturningProcess(boolean cpuEmpty) {
+    }
 }
