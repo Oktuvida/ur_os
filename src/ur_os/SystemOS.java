@@ -13,13 +13,6 @@ import java.util.Random;
  * @author super
  */
 public class SystemOS implements Runnable{
-    private float cpu_utilization = 0; 
-    private float throughput = 0;
-    private float turnaround_time = 0;
-    private float waiting_time = 0;
-
-    private int empty_cpu_counter = 0;
-
     
     private static int clock = 0;
     private static final int MAX_SIM_CYCLES = 1000;
@@ -43,8 +36,8 @@ public class SystemOS implements Runnable{
         processes = new ArrayList<>();
         //initSimulationQueue();
         //initSimulationQueueSimple();
-        initSimulationQueueSimpler();
-        initMetrics();
+        //initSimulationQueueSimpler();
+        initSimulationQueueSimpler2();
         showProcesses();
     }
     
@@ -138,11 +131,55 @@ public class SystemOS implements Runnable{
         
         clock = 0;
     }
-
-    private void initMetrics() {
-        for (Process p: processes) {
-            waiting_time -= p.getRemainingTimeInCurrentBurst();
-        }
+    
+    public void initSimulationQueueSimpler2(){
+        
+        Process p = new Process(false);
+        ProcessBurst temp = new ProcessBurst(15,ProcessBurstType.CPU);    
+        p.addBurst(temp);
+        temp = new ProcessBurst(12,ProcessBurstType.IO);    
+        p.addBurst(temp);
+        temp = new ProcessBurst(21,ProcessBurstType.CPU);    
+        p.addBurst(temp);
+        p.setTime_init(0);
+        p.setPid(0);
+        processes.add(p);
+        
+        
+        p = new Process(false);
+        temp = new ProcessBurst(8,ProcessBurstType.CPU);    
+        p.addBurst(temp);
+        temp = new ProcessBurst(4,ProcessBurstType.IO);    
+        p.addBurst(temp);
+        temp = new ProcessBurst(16,ProcessBurstType.CPU);    
+        p.addBurst(temp);
+        p.setTime_init(2);
+        p.setPid(1);
+        processes.add(p);
+        
+        p = new Process(false);
+        temp = new ProcessBurst(10,ProcessBurstType.CPU);    
+        p.addBurst(temp);
+        temp = new ProcessBurst(5,ProcessBurstType.IO);    
+        p.addBurst(temp);
+        temp = new ProcessBurst(12,ProcessBurstType.CPU);    
+        p.addBurst(temp);
+        p.setTime_init(6);
+        p.setPid(2);
+        processes.add(p);
+        
+        p = new Process(false);
+        temp = new ProcessBurst(9,ProcessBurstType.CPU);    
+        p.addBurst(temp);
+        temp = new ProcessBurst(6,ProcessBurstType.IO);    
+        p.addBurst(temp);
+        temp = new ProcessBurst(17,ProcessBurstType.CPU);    
+        p.addBurst(temp);
+        p.setTime_init(8);
+        p.setPid(3);
+        processes.add(p);
+        
+        clock = 0;
     }
     
     public boolean isSimulationFinished(){
@@ -160,6 +197,7 @@ public class SystemOS implements Runnable{
     
     @Override
     public void run() {
+        double tp;
         ArrayList<Process> ps;
         
         System.out.println("******SIMULATION START******");
@@ -171,7 +209,9 @@ public class SystemOS implements Runnable{
             System.out.println("******Clock: "+i+"******");
             System.out.println(cpu);
             System.out.println(ioq);
-
+            if(i == 32){
+                int a=0;
+            }
             //Crear procesos, si aplica en el ciclo actual
             ps = getProcessAtI(i);
             for (Process p : ps) {
@@ -179,8 +219,12 @@ public class SystemOS implements Runnable{
             } //If the scheduler is preemtive, this action will trigger the extraction from the CPU, is any process is there.
             
             //Actualizar el OS, quien va actualizar el Scheduler            
+
             os.update();
             //os.update() prepares the system for execution. It runs at the beginning of the cycle.
+            
+                        
+            clock++;
             
             temp_exec = cpu.getProcess();
             if(temp_exec == null){
@@ -190,9 +234,9 @@ public class SystemOS implements Runnable{
             }
             execution.add(tempID);
             
-            
             //Actualizar la CPU
             cpu.update();
+            
             
             ///Actualizar la IO
             ioq.update();
@@ -202,42 +246,25 @@ public class SystemOS implements Runnable{
             System.out.println("After the cycle: ");
             System.out.println(cpu);
             System.out.println(ioq);
-            
             i++;
-            clock++;
 
-            if (temp_exec != null) {
-                if (temp_exec.isFinished()) {
-                    float tmp = clock - temp_exec.time_init;
-                    turnaround_time += tmp;
-                    waiting_time += tmp;
-                }
-                
-                if (os.isCPUEmpty() && !temp_exec.isFinished()) {
-                    empty_cpu_counter++;
-                }
-            }
         }
         System.out.println("******SIMULATION FINISHES******");
         //os.showProcesses();
-
-        // ------------- CRITERIAS ------------
-        cpu_utilization = (float) (clock - empty_cpu_counter) / clock * 100;
-        throughput = (float) processes.size() / clock;
-        turnaround_time = (float) turnaround_time / processes.size();
-        waiting_time = (float) waiting_time / processes.size();
-
-        System.out.println("CPU UTILIZATION: " + cpu_utilization);
-        System.out.println("THROUGHPUT: " + throughput);
-        System.out.println("AVG. TURNAROUND_TIME: " + turnaround_time);
-        System.out.println("AVG. WAITING TIME: " + waiting_time);
-        // ------------------------------------
         
         System.out.println("******Process Execution******");
         for (Integer num : execution) {
             System.out.print(num+" ");
         }
         System.out.println("");
+        
+        System.out.println("******Performance Indicators******");
+        System.out.println("Total execution cycles: "+clock);
+        System.out.println("CPU Utilization: "+this.calcCPUUtilization());
+        System.out.println("Throughput: "+this.calcThroughput());
+        System.out.println("Average Turnaround Time: "+this.calcTurnaroundTime());
+        System.out.println("Average Waiting Time: "+this.calcAvgWaitingTime());
+        System.out.println("Average Context Switches: "+this.calcAvgContextSwitches());
     }
     
     public void showProcesses(){
@@ -250,6 +277,59 @@ public class SystemOS implements Runnable{
         }
         
         System.out.println(sb.toString());
+    }
+    
+    
+    public double calcCPUUtilization(){
+        int cont = 1;
+
+        int last_id = execution.get(0);
+        for (int id: execution) {
+            if (last_id != id) {
+                last_id = id;
+                cont += 1;
+            }
+        }
+        
+        return (double) clock / (clock + cont) * 100;
+    }
+    
+    public double calcTurnaroundTime(){
+        
+        double tot = 0;
+        for (Process p: processes) {
+            tot += p.getTime_finished() - p.getTime_init();
+        }
+
+        return (double) tot/processes.size();
+    }
+    
+    public double calcThroughput(){
+        return (double) processes.size() / clock;
+    }
+    
+    public double calcAvgWaitingTime(){
+        double tot = 0;
+        
+        for (Process p: processes) {
+            tot += p.getTime_finished() - p.getTime_init() - p.getTotalExecutionTime();
+        }
+        
+        return (double) tot/processes.size();
+    }
+    
+    public double calcAvgContextSwitches(){
+        int cont = 1;
+        
+        int last_id = execution.get(0);
+        for (int id: execution) {
+            if (last_id != id) {
+                last_id = id;
+                cont += 1;
+            }
+        }
+        
+        return (double) cont / processes.size();
     }
     
     
