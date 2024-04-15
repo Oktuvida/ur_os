@@ -3,7 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package ur_os;
+package ur_os.process;
+
+import java.util.ArrayList;
+import ur_os.system.OS;
 
 /**
  *
@@ -24,13 +27,13 @@ public class ReadyQueue {
         
         //s = new FCFS(os);
         
-        //s = new RoundRobin(os,4);
+        //s = new RoundRobin(os,6);
         
         s = new MFQ(os,new RoundRobin(os,3),new RoundRobin(os,6),new FCFS(os));
     }
     
     public ReadyQueue(OS OS, Scheduler s){
-        this.os = OS;
+        this.os = os;
         this.s = s;
     }
     

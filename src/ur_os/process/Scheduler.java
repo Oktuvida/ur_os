@@ -2,9 +2,11 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package ur_os;
+package ur_os.process;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
+import ur_os.system.OS;
 
 /**
  *
@@ -18,7 +20,7 @@ public abstract class Scheduler {
     
     public Scheduler(OS os){
         this.os = os;
-        processes = new LinkedList<>();
+        processes = new LinkedList();
     }
 
     public void getNext(){
@@ -28,11 +30,14 @@ public abstract class Scheduler {
     public abstract void getNext(boolean cpuEmpty);
     public abstract void newProcess(boolean cpuEmpty); //Implement for Preemtive schedulers
     public abstract void IOReturningProcess(boolean cpuEmpty); //Implement for Preemtive schedulers
-    //public abstract void CPUReturningProcess(boolean cpuEmpty); //Implement for Preemtive schedulers
     
     
     public boolean isEmpty(){
         return this.processes.isEmpty();
+    }
+    
+    public void returnProcess(Process p){
+        processes.addFirst(p);
     }
     
     public void addProcess(Process p){
@@ -48,7 +53,10 @@ public abstract class Scheduler {
     }
     
     public void update(){
-            getNext(os.isCPUEmpty());
+
+        getNext(os.isCPUEmpty());
+
+
     }
     
     public Process removeProcess(Process p){

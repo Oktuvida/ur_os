@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package ur_os;
+package ur_os.process;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -20,7 +20,7 @@ public class ProcessBurstList {
     boolean finished;
 
     public ProcessBurstList() {
-        bursts = new ArrayList<>();
+        bursts = new ArrayList();
         r = new Random();
         this.currentBurst = 0;
         finished = false;

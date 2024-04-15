@@ -2,13 +2,16 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Enum.java to edit this template
  */
-package ur_os;
+package ur_os.system;
 
 /**
  *
- * @author prestamour
+ * @author pedro.wightman
  */
-public enum ProcessBurstType {
+public enum InterruptType {
     CPU,
-    IO
+    IO,
+    SCHEDULER_CPU_TO_RQ,
+    SCHEDULER_RQ_TO_CPU,
+    
 }

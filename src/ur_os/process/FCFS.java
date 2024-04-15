@@ -2,7 +2,10 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package ur_os;
+package ur_os.process;
+
+import ur_os.system.InterruptType;
+import ur_os.system.OS;
 
 /**
  *
@@ -15,7 +18,6 @@ public class FCFS extends Scheduler{
         super(os);
     }
     
-   
     @Override
     public void getNext(boolean cpuEmpty) {
         if(!processes.isEmpty() && cpuEmpty)

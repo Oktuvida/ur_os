@@ -3,8 +3,16 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package ur_os;
+package ur_os.system;
 
+import ur_os.process.ProcessBurstType;
+import ur_os.process.ProcessBurst;
+import ur_os.memory.PMM_Contiguous;
+import ur_os.memory.Memory;
+import ur_os.memory.PMM_Paging;
+import ur_os.process.ProcessMemoryManager;
+import ur_os.process.ProcessMemoryManagerType;
+import ur_os.process.Process;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -14,31 +22,39 @@ import java.util.Random;
  */
 public class SystemOS implements Runnable{
     
+    SimulationType simType;
     private static int clock = 0;
     private static final int MAX_SIM_CYCLES = 1000;
     private static final int MAX_SIM_PROC_CREATION_TIME = 50;
     private static final double PROB_PROC_CREATION = 0.1;
+    public static final int MAX_PROC_SIZE = 1000;
     private static Random r = new Random(1235);
     private OS os;
     private CPU cpu;
     private IOQueue ioq;
     
+    private Memory memory;
+    public static int PAGE_SIZE = 64; //Page size in bytes
+    public static ProcessMemoryManagerType PMM = ProcessMemoryManagerType.CONTIGUOUS;
+    public static int MEMORY_SIZE = 1_048_576; //1MB
+    
     protected ArrayList<Process> processes;
     ArrayList<Integer> execution;
 
-    public SystemOS() {
+    public SystemOS(SimulationType simType) {
         cpu = new CPU();
         ioq = new IOQueue();
-        os = new OS(this, cpu, ioq);
+        memory = new Memory(MEMORY_SIZE);
+        os = new OS(this, cpu, ioq, memory);
         cpu.setOS(os);
         ioq.setOS(os);
         execution = new ArrayList<>();
         processes = new ArrayList<>();
         //initSimulationQueue();
         //initSimulationQueueSimple();
-        //initSimulationQueueSimpler();
-        initSimulationQueueSimpler2();
+        initSimulationQueueSimpler();
         showProcesses();
+        this.simType = simType;
     }
     
     public int getTime(){
@@ -88,28 +104,53 @@ public class SystemOS implements Runnable{
     
     public void initSimulationQueueSimpler(){
         
-        Process p = new Process(false);
+        //ProcessMemoryManagement(ProcessMemoryManagerType type, int process_size)
+        
+        ProcessMemoryManager pmm;
+        //Process 0
+        if(PMM == ProcessMemoryManagerType.PAGING){
+            pmm = new PMM_Paging(r.nextInt(MAX_PROC_SIZE));
+        }else{
+            pmm = new PMM_Contiguous(0*MAX_PROC_SIZE, r.nextInt(MAX_PROC_SIZE));
+        }
+        
+        Process p = new Process(0,0,pmm);
         ProcessBurst temp = new ProcessBurst(5,ProcessBurstType.CPU);    
         p.addBurst(temp);
         temp = new ProcessBurst(4,ProcessBurstType.IO);    
         p.addBurst(temp);
         temp = new ProcessBurst(3,ProcessBurstType.CPU);    
         p.addBurst(temp);
-        p.setTime_init(0);
+        //p.setTime_init(0);
         processes.add(p);
         
         
-        p = new Process(false);
+        //Process 2
+        if(PMM == ProcessMemoryManagerType.PAGING){
+            pmm = new PMM_Paging(r.nextInt(MAX_PROC_SIZE));
+        }else{
+            pmm = new PMM_Contiguous(1*MAX_PROC_SIZE, r.nextInt(MAX_PROC_SIZE));
+        }
+        
+        p = new Process(1,2,pmm);
         temp = new ProcessBurst(3,ProcessBurstType.CPU);    
         p.addBurst(temp);
         temp = new ProcessBurst(5,ProcessBurstType.IO);    
         p.addBurst(temp);
         temp = new ProcessBurst(6,ProcessBurstType.CPU);    
         p.addBurst(temp);
-        p.setTime_init(2);
+        //p.setTime_init(2);
         processes.add(p);
         
-        p = new Process(false);
+        
+        //Process 2
+        if(PMM == ProcessMemoryManagerType.PAGING){
+            pmm = new PMM_Paging(r.nextInt(MAX_PROC_SIZE));
+        }else{
+            pmm = new PMM_Contiguous(2*MAX_PROC_SIZE, r.nextInt(MAX_PROC_SIZE));
+        }
+        
+        p = new Process(2,6,pmm);
         temp = new ProcessBurst(7,ProcessBurstType.CPU);    
         p.addBurst(temp);
         temp = new ProcessBurst(3,ProcessBurstType.IO);    
@@ -119,14 +160,21 @@ public class SystemOS implements Runnable{
         p.setTime_init(6);
         processes.add(p);
         
-        p = new Process(false);
+        //Process 3
+        if(PMM == ProcessMemoryManagerType.PAGING){
+            pmm = new PMM_Paging(r.nextInt(MAX_PROC_SIZE));
+        }else{
+            pmm = new PMM_Contiguous(3*MAX_PROC_SIZE, r.nextInt(MAX_PROC_SIZE));
+        }
+        
+        p = new Process(3,8,pmm);
         temp = new ProcessBurst(4,ProcessBurstType.CPU);    
         p.addBurst(temp);
         temp = new ProcessBurst(3,ProcessBurstType.IO);    
         p.addBurst(temp);
         temp = new ProcessBurst(7,ProcessBurstType.CPU);    
         p.addBurst(temp);
-        p.setTime_init(8);
+        //p.setTime_init(8);
         processes.add(p);
         
         clock = 0;
@@ -193,11 +241,15 @@ public class SystemOS implements Runnable{
         return finished;
     
     }
+
+    public SimulationType getSimulationType() {
+        return simType;
+    }
+    
     
     
     @Override
     public void run() {
-        double tp;
         ArrayList<Process> ps;
         
         System.out.println("******SIMULATION START******");
@@ -207,11 +259,13 @@ public class SystemOS implements Runnable{
         int tempID;
         while(!isSimulationFinished() && i < MAX_SIM_CYCLES){//MAX_SIM_CYCLES is the maximum simulation time, to avoid infinite loops
             System.out.println("******Clock: "+i+"******");
-            System.out.println(cpu);
-            System.out.println(ioq);
-            if(i == 32){
-                int a=0;
+            
+            
+            if(this.getSimulationType() == SimulationType.ALL || this.getSimulationType() == SimulationType.PROCESS_PLANNING){
+                System.out.println(cpu);
+                System.out.println(ioq);
             }
+            
             //Crear procesos, si aplica en el ciclo actual
             ps = getProcessAtI(i);
             for (Process p : ps) {
@@ -243,9 +297,11 @@ public class SystemOS implements Runnable{
             
             //Las actualizaciones de CPU y IO pueden generar interrupciones que actualizan a cola de listos, cuando salen los procesos
             
-            System.out.println("After the cycle: ");
-            System.out.println(cpu);
-            System.out.println(ioq);
+            if(this.getSimulationType() == SimulationType.ALL || this.getSimulationType() == SimulationType.PROCESS_PLANNING){
+                System.out.println("After the cycle: ");
+                System.out.println(cpu);
+                System.out.println(ioq);
+            }
             i++;
 
         }
@@ -265,6 +321,9 @@ public class SystemOS implements Runnable{
         System.out.println("Average Turnaround Time: "+this.calcTurnaroundTime());
         System.out.println("Average Waiting Time: "+this.calcAvgWaitingTime());
         System.out.println("Average Context Switches: "+this.calcAvgContextSwitches());
+        
+        showProcesses();
+        memory.showNotNullBytes();
     }
     
     public void showProcesses(){
@@ -281,55 +340,52 @@ public class SystemOS implements Runnable{
     
     
     public double calcCPUUtilization(){
-        int cont = 1;
-
-        int last_id = execution.get(0);
-        for (int id: execution) {
-            if (last_id != id) {
-                last_id = id;
-                cont += 1;
-            }
+        int cont=0;
+        for (Integer num : execution) {
+            if(num == -1)
+                cont++;
         }
         
-        return (double) clock / (clock + cont) * 100;
+        return (execution.size()-cont)/(double)execution.size();
     }
     
     public double calcTurnaroundTime(){
         
         double tot = 0;
-        for (Process p: processes) {
-            tot += p.getTime_finished() - p.getTime_init();
+        
+        for (Process p : processes) {
+            tot = tot + (p.getTime_finished() - p.getTime_init());
         }
-
-        return (double) tot/processes.size();
+        
+        
+        return tot/processes.size();
     }
     
     public double calcThroughput(){
-        return (double) processes.size() / clock;
+        return (double)processes.size()/execution.size();
     }
     
     public double calcAvgWaitingTime(){
         double tot = 0;
         
-        for (Process p: processes) {
-            tot += p.getTime_finished() - p.getTime_init() - p.getTotalExecutionTime();
+        for (Process p : processes) {
+            tot = tot + ((p.getTime_finished() - p.getTime_init()) - p.getTotalExecutionTime());
         }
         
-        return (double) tot/processes.size();
+        return tot/processes.size();
     }
     
     public double calcAvgContextSwitches(){
         int cont = 1;
-        
-        int last_id = execution.get(0);
-        for (int id: execution) {
-            if (last_id != id) {
-                last_id = id;
-                cont += 1;
+        int prev = execution.get(0);
+        for (Integer i : execution) {
+            if(prev != i){
+                cont++;
+                prev = i;
             }
         }
         
-        return (double) cont / processes.size();
+        return cont / (double)processes.size();
     }
     
     
