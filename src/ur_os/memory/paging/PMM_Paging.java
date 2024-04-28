@@ -2,8 +2,9 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package ur_os.memory;
+package ur_os.memory.paging;
 
+import ur_os.memory.MemoryAddress;
 import ur_os.process.ProcessMemoryManager;
 import ur_os.process.ProcessMemoryManagerType;
 
@@ -42,20 +43,18 @@ public class PMM_Paging extends ProcessMemoryManager{
     }
     
     public MemoryAddress getPageMemoryAddressFromLocalAddress(int locAdd){
-        //Include the code to calculate the corresponding page and offset for a logical address
+        //To do
         return null;
     }
     
     public MemoryAddress getFrameMemoryAddressFromLogicalMemoryAddress(MemoryAddress m){
-        //Include the code to calculate the corresponding frame and offset for a logical address
+        //To do
         return null;
     }
     
    @Override
     public int getPhysicalAddress(int logicalAddress){
-        
-        //Include the code to calculate the physical address here
-        
+        //To do
         return -1;
     }
     

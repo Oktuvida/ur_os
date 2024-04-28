@@ -2,13 +2,13 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package ur_os.memory;
+package ur_os.memory.paging;
 
 /**
  *
  * @author super
  */
-public class PageTableEntry {
+public class PageTableEntry implements Comparable{
     
     int frameId;
     boolean dirty;
@@ -37,6 +37,18 @@ public class PageTableEntry {
     @Override
     public String toString(){
         return "Frame: "+frameId+" Dirty: "+dirty;
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        if(o instanceof PageTableEntry){
+            PageTableEntry p = (PageTableEntry)o;
+            
+            return this.frameId - p.frameId;
+            
+        }
+            
+        return -999;
     }
     
     

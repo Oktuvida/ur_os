@@ -5,18 +5,28 @@
  */
 package ur_os.system;
 
-import ur_os.memory.PMM_Contiguous;
+import ur_os.memory.contiguous.PMM_Contiguous;
 import ur_os.memory.Memory;
-import ur_os.memory.FreeFramesList;
-import ur_os.memory.PMM_Paging;
+import ur_os.memory.freememorymagament.FreeFramesManager;
+import ur_os.memory.paging.PMM_Paging;
 import ur_os.process.ProcessMemoryManager;
 import ur_os.process.ProcessMemoryManagerType;
 import ur_os.process.Process;
 import ur_os.process.ReadyQueue;
 import ur_os.process.ProcessState;
-import java.util.LinkedList;
 import java.util.Random;
+
+import ur_os.memory.freememorymagament.BestFitMemorySlotManager;
+import ur_os.memory.freememorymagament.FirstFitMemorySlotManager;
+import ur_os.memory.freememorymagament.FreeMemoryManager;
+import ur_os.memory.freememorymagament.MemorySlot;
+import ur_os.memory.freememorymagament.WorstFitMemorySlotManager;
+import ur_os.memory.freememorymagament.FreeMemorySlotManager;
+import ur_os.memory.segmentation.PMM_Segmentation;
+import static ur_os.process.ProcessMemoryManagerType.CONTIGUOUS;
 import static ur_os.system.InterruptType.SCHEDULER_CPU_TO_RQ;
+import static ur_os.system.SystemOS.MAX_PROC_SIZE;
+import static ur_os.system.SystemOS.PMM;
 
 
 /**
@@ -31,7 +41,9 @@ public class OS {
     SystemOS system;
     CPU cpu;
     Memory memory;
-    FreeFramesList freeFrames;
+    FreeMemoryManager fmm;
+    FreeFramesManager freeFrames;
+    FreeMemorySlotManager msm;
     Random r;
     
     public OS(SystemOS system, CPU cpu, IOQueue ioq, Memory memory){
@@ -40,7 +52,21 @@ public class OS {
         this.system = system;
         this.cpu = cpu;
         this.memory = memory;
-        freeFrames = new FreeFramesList(memory.getSize());
+        freeFrames = new FreeFramesManager(memory.getSize());
+        
+        switch(SystemOS.MSM){
+            case FIRST_FIT:
+                msm = new FirstFitMemorySlotManager();
+                break;
+            case BEST_FIT:
+                msm = new BestFitMemorySlotManager();
+                break;
+            case WORST_FIT:
+                msm = new WorstFitMemorySlotManager();
+                break;
+        }
+        
+        
         r = new Random();
     }
     
@@ -65,6 +91,11 @@ public class OS {
                 if(p.isFinished()){//The process finished completely
                     p.setState(ProcessState.FINISHED);
                     p.setTime_finished(system.getTime());
+                    if(SystemOS.PMM == ProcessMemoryManagerType.PAGING){
+                        freeFrames.reclaimMemory(p);
+                    }else{
+                        msm.reclaimMemory(p);
+                    }
                 }else{
                     ioq.addProcess(p);
                 }
@@ -116,9 +147,46 @@ public class OS {
     public void create_process(Process p){
         p.setPid(process_count++);
         rq.addProcess(p);
-        if(SystemOS.PMM == ProcessMemoryManagerType.PAGING){
-            assignFramesToProcess(p);
+        
+        ProcessMemoryManager pmm;
+        switch (PMM) {
+            case PAGING:
+                pmm = new PMM_Paging(r.nextInt(MAX_PROC_SIZE));
+                p.setPMM(pmm);
+                assignFramesToProcess(p);
+                break;
+            case SEGMENTATION:
+                pmm = new PMM_Segmentation(r.nextInt(MAX_PROC_SIZE));
+                p.setPMM(pmm);
+                assignSegmentsToProcess(p);
+                break;
+            default:
+            case CONTIGUOUS:
+                pmm = new PMM_Contiguous(r.nextInt(MAX_PROC_SIZE));
+                p.setPMM(pmm);
+                //get free slot and assign it to the process
+                PMM_Contiguous pmmc = (PMM_Contiguous)p.getPMM();
+                pmmc.setMemorySlot(getMemorySlot(p.getSize()));
+                break;
         }
+        
+    }
+    
+    public MemorySlot getMemorySlot(int size){
+        return msm.getSlot(size);
+    }
+    
+    public void assignSegmentsToProcess(Process p){
+        PMM_Segmentation pmm = (PMM_Segmentation)p.getPMM();
+        int limit;
+        MemorySlot m;
+        int ptSize = pmm.getSt().getSize();
+        for (int i = 0; i < ptSize; i++) {
+            limit = pmm.getSegment(i).getLimit();
+            m = this.getMemorySlot(limit);
+            pmm.getSegment(i).setMemorySlot(m);
+        }
+        limit = 0;
     }
     
     public void assignFramesToProcess(Process p){

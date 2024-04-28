@@ -7,7 +7,7 @@ package ur_os.process;
 
 import ur_os.memory.MemoryOperation;
 import ur_os.memory.MemoryOperationList;
-import ur_os.memory.PMM_Contiguous;
+import ur_os.memory.contiguous.PMM_Contiguous;
 import static ur_os.process.ProcessMemoryManagerType.PAGING;
 
 /**
@@ -38,6 +38,10 @@ public class Process implements Comparable{
     
     public Process(int pid, int time_init) {
         this(false, false, pid, time_init, null);
+    }
+    
+    public Process(int pid, int time_init, boolean autoproc) {
+        this(autoproc, false, pid, time_init, null);
     }
     
     public Process(int pid, int time_init, ProcessMemoryManager pmm) {
@@ -91,6 +95,11 @@ public class Process implements Comparable{
 
     public ProcessMemoryManager getPMM() {
         return pmm;
+    }
+    
+    public void setPMM(ProcessMemoryManager pmm){
+        this.pmm = pmm;
+        mol.generateSimpleMemoryOperations(pmm.getSize()); //Generate 10 random Memory Operations
     }
 
     public boolean advanceBurst(){

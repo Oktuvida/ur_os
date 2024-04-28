@@ -10,24 +10,24 @@ package ur_os.memory;
  */
 public class MemoryAddress {
     
-    int page_frame;
+    int division;
     int offset;
 
     public MemoryAddress() {
         this(0,0);
     }
     
-    public MemoryAddress(int page_frame, int offset) {
-        this.page_frame = page_frame;
+    public MemoryAddress(int division, int offset) {
+        this.division = division;
         this.offset = offset;
     }
 
-    public int getPage_frame() {
-        return page_frame;
+    public int getDivision() {
+        return division;
     }
 
-    public void setPage_frame(int page_frame) {
-        this.page_frame = page_frame;
+    public void setDivision(int division) {
+        this.division = division;
     }
 
     public int getOffset() {
@@ -39,7 +39,7 @@ public class MemoryAddress {
     }
     
     public int getAddress(){
-        return this.page_frame+this.offset;
+        return this.division+this.offset;
     }
     
 }

@@ -7,14 +7,16 @@ package ur_os.system;
 
 import ur_os.process.ProcessBurstType;
 import ur_os.process.ProcessBurst;
-import ur_os.memory.PMM_Contiguous;
+import ur_os.memory.contiguous.PMM_Contiguous;
 import ur_os.memory.Memory;
-import ur_os.memory.PMM_Paging;
+import ur_os.memory.paging.PMM_Paging;
 import ur_os.process.ProcessMemoryManager;
 import ur_os.process.ProcessMemoryManagerType;
 import ur_os.process.Process;
 import java.util.ArrayList;
 import java.util.Random;
+import ur_os.memory.freememorymagament.FreeMemorySlotManagerType;
+import ur_os.memory.segmentation.PMM_Segmentation;
 
 /**
  *
@@ -34,9 +36,10 @@ public class SystemOS implements Runnable{
     private IOQueue ioq;
     
     private Memory memory;
-    public static int PAGE_SIZE = 64; //Page size in bytes
-    public static ProcessMemoryManagerType PMM = ProcessMemoryManagerType.CONTIGUOUS;
-    public static int MEMORY_SIZE = 1_048_576; //1MB
+    public static final int PAGE_SIZE = 64; //Page size in bytes
+    public static final ProcessMemoryManagerType PMM = ProcessMemoryManagerType.SEGMENTATION;
+    public static final FreeMemorySlotManagerType MSM = FreeMemorySlotManagerType.BEST_FIT;
+    public static final int MEMORY_SIZE = 1_048_576; //1MB
     
     protected ArrayList<Process> processes;
     ArrayList<Integer> execution;
@@ -48,11 +51,11 @@ public class SystemOS implements Runnable{
         os = new OS(this, cpu, ioq, memory);
         cpu.setOS(os);
         ioq.setOS(os);
-        execution = new ArrayList<>();
-        processes = new ArrayList<>();
+        execution = new ArrayList();
+        processes = new ArrayList();
         //initSimulationQueue();
-        //initSimulationQueueSimple();
-        initSimulationQueueSimpler();
+        initSimulationQueueSimple();
+        //initSimulationQueueSimpler();
         showProcesses();
         this.simType = simType;
     }
@@ -62,7 +65,7 @@ public class SystemOS implements Runnable{
     }
     
     public ArrayList<Process> getProcessAtI(int i){
-        ArrayList<Process> ps = new ArrayList<>();
+        ArrayList<Process> ps = new ArrayList();
         
         for (Process process : processes) {
             if(process.getTime_init() == i){
@@ -93,7 +96,7 @@ public class SystemOS implements Runnable{
         int cont = 0;
         for (int i = 0; i < MAX_SIM_PROC_CREATION_TIME; i++) {
             if(i % 4 == 0){
-                p = new Process(cont++,-1);
+                p = new Process(cont++,-1,true);
                 p.setTime_init(clock);
                 processes.add(p);
             }
@@ -104,77 +107,46 @@ public class SystemOS implements Runnable{
     
     public void initSimulationQueueSimpler(){
         
-        //ProcessMemoryManagement(ProcessMemoryManagerType type, int process_size)
         
-        ProcessMemoryManager pmm;
-        //Process 0
-        if(PMM == ProcessMemoryManagerType.PAGING){
-            pmm = new PMM_Paging(r.nextInt(MAX_PROC_SIZE));
-        }else{
-            pmm = new PMM_Contiguous(0*MAX_PROC_SIZE, r.nextInt(MAX_PROC_SIZE));
-        }
-        
-        Process p = new Process(0,0,pmm);
+        Process p = new Process(0,0);
         ProcessBurst temp = new ProcessBurst(5,ProcessBurstType.CPU);    
         p.addBurst(temp);
         temp = new ProcessBurst(4,ProcessBurstType.IO);    
         p.addBurst(temp);
         temp = new ProcessBurst(3,ProcessBurstType.CPU);    
         p.addBurst(temp);
-        //p.setTime_init(0);
         processes.add(p);
         
         
-        //Process 2
-        if(PMM == ProcessMemoryManagerType.PAGING){
-            pmm = new PMM_Paging(r.nextInt(MAX_PROC_SIZE));
-        }else{
-            pmm = new PMM_Contiguous(1*MAX_PROC_SIZE, r.nextInt(MAX_PROC_SIZE));
-        }
-        
-        p = new Process(1,2,pmm);
+        //Process 1
+        p = new Process(1,2);
         temp = new ProcessBurst(3,ProcessBurstType.CPU);    
         p.addBurst(temp);
         temp = new ProcessBurst(5,ProcessBurstType.IO);    
         p.addBurst(temp);
         temp = new ProcessBurst(6,ProcessBurstType.CPU);    
         p.addBurst(temp);
-        //p.setTime_init(2);
         processes.add(p);
         
         
         //Process 2
-        if(PMM == ProcessMemoryManagerType.PAGING){
-            pmm = new PMM_Paging(r.nextInt(MAX_PROC_SIZE));
-        }else{
-            pmm = new PMM_Contiguous(2*MAX_PROC_SIZE, r.nextInt(MAX_PROC_SIZE));
-        }
-        
-        p = new Process(2,6,pmm);
+        p = new Process(2,6);
         temp = new ProcessBurst(7,ProcessBurstType.CPU);    
         p.addBurst(temp);
         temp = new ProcessBurst(3,ProcessBurstType.IO);    
         p.addBurst(temp);
         temp = new ProcessBurst(5,ProcessBurstType.CPU);    
         p.addBurst(temp);
-        p.setTime_init(6);
         processes.add(p);
         
         //Process 3
-        if(PMM == ProcessMemoryManagerType.PAGING){
-            pmm = new PMM_Paging(r.nextInt(MAX_PROC_SIZE));
-        }else{
-            pmm = new PMM_Contiguous(3*MAX_PROC_SIZE, r.nextInt(MAX_PROC_SIZE));
-        }
-        
-        p = new Process(3,8,pmm);
+        p = new Process(3,8);
         temp = new ProcessBurst(4,ProcessBurstType.CPU);    
         p.addBurst(temp);
         temp = new ProcessBurst(3,ProcessBurstType.IO);    
         p.addBurst(temp);
         temp = new ProcessBurst(7,ProcessBurstType.CPU);    
         p.addBurst(temp);
-        //p.setTime_init(8);
         processes.add(p);
         
         clock = 0;
@@ -250,6 +222,7 @@ public class SystemOS implements Runnable{
     
     @Override
     public void run() {
+        double tp;
         ArrayList<Process> ps;
         
         System.out.println("******SIMULATION START******");
@@ -324,6 +297,13 @@ public class SystemOS implements Runnable{
         
         showProcesses();
         memory.showNotNullBytes();
+        
+        if(PMM == ProcessMemoryManagerType.PAGING){
+            System.out.println("Free frame number: "+os.freeFrames.getSize());
+        }else{
+            System.out.println("Free Memory Slots ("+os.msm.getSize()+"): ");
+            System.out.println(os.msm);
+        }
     }
     
     public void showProcesses(){

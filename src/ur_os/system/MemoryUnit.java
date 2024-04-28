@@ -32,6 +32,9 @@ public class MemoryUnit {
     }
     
     public void executeMemoryOperation(MemoryOperation mop){
+        if(mop.getType() == ur_os.memory.MemoryOperationType.STORE){
+            int i=0;
+        }
         int logAdd = mop.getLogicalAddress();
         int phyAdd = getPhysicalAddress(logAdd);
         switch(mop.getType()){

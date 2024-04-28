@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package ur_os.memory;
+package ur_os.memory.paging;
 
 import java.util.ArrayList;
 import ur_os.system.SystemOS;
@@ -72,6 +72,9 @@ public class PageTable {
         return SystemOS.PAGE_SIZE;
     }
     
+    public ArrayList<PageTableEntry> getList(){
+        return this.pageTable;
+    }
     
     public String toString(){
         StringBuilder sb = new StringBuilder();

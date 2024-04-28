@@ -7,6 +7,8 @@ package ur_os.system;
 import ur_os.process.Process;
 import ur_os.process.ProcessState;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  *
@@ -18,7 +20,7 @@ public class IOQueue {
     
     
     IOQueue(){
-        processes = new ArrayList<>();
+        processes = new ArrayList();
     }
    
     
