@@ -43,19 +43,26 @@ public class PMM_Paging extends ProcessMemoryManager{
     }
     
     public MemoryAddress getPageMemoryAddressFromLocalAddress(int locAdd){
-        //To do
-        return null;
+        int page = locAdd / PageTable.getPageSize();
+        int offset = locAdd % PageTable.getPageSize();
+
+        MemoryAddress ma = new MemoryAddress(page, offset);
+        return ma;
     }
     
     public MemoryAddress getFrameMemoryAddressFromLogicalMemoryAddress(MemoryAddress m){
-        //To do
-        return null;
+        int frame = pt.getFrameIdFromPage(m.getDivision());
+
+        MemoryAddress ma = new MemoryAddress(frame, m.getOffset());
+        return ma;
     }
     
    @Override
     public int getPhysicalAddress(int logicalAddress){
-        //To do
-        return -1;
+        MemoryAddress ma1 = getPageMemoryAddressFromLocalAddress(logicalAddress);
+        MemoryAddress ma2 = getFrameMemoryAddressFromLogicalMemoryAddress(ma1);
+        MemoryAddress ma3 = new MemoryAddress(ma2.getDivision() * PageTable.getPageSize(), ma2.getOffset());
+        return ma3.getAddress();
     }
     
      @Override
