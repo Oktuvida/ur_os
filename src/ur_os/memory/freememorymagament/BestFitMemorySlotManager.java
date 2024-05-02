@@ -13,7 +13,14 @@ public class BestFitMemorySlotManager extends FreeMemorySlotManager{
     @Override
     public MemorySlot getSlot(int size) {
         MemorySlot m = null;
-        //To do
+        for (MemorySlot ms : list) {
+            if (ms.getSize() >= size && (m == null || m.getSize() > ms.getSize())) {
+                m = ms;
+            }
+        }
+        //if (m != null) {
+        //    m.setSize(m.getSize() - size);
+        //}
         return m;
     }
     
