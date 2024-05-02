@@ -58,8 +58,9 @@ public class PMM_Segmentation extends ProcessMemoryManager{
     
    @Override
     public int getPhysicalAddress(int logicalAddress){
-       //To do
-        return -1;
+        MemoryAddress m1 = getSegmentMemoryAddressFromLocalAddress(logicalAddress);
+        MemoryAddress m2 = getPhysicalMemoryAddressFromLogicalMemoryAddress(m1);
+        return m2.getAddress();
     }
     
      @Override

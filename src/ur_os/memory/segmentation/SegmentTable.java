@@ -37,7 +37,7 @@ public class SegmentTable {
     public SegmentTable(int programSize, int segmentNumber, boolean auto){
         this.programSize = programSize;
         this.segmentNumber = segmentNumber;
-        segmentTable = new ArrayList(segmentNumber); 
+        segmentTable = new ArrayList<>(segmentNumber); 
         r = new Random();
         if(auto)
             createSegments();
@@ -74,7 +74,7 @@ public class SegmentTable {
     
     public SegmentTable(SegmentTable pt){
         this(pt.getProgramSize(), pt.getSize());
-        segmentTable = new ArrayList(pt.getTable());
+        segmentTable = new ArrayList<>(pt.getTable());
     }
     
     public ArrayList<SegmentTableEntry> getTable(){
@@ -82,13 +82,19 @@ public class SegmentTable {
     }
     
     public MemoryAddress getSegmentMemoryAddressFromLocalAddress(int locAdd){
-        //To do
+        for (int segment = 0; segment < segmentTable.size(); segment++) {
+            SegmentTableEntry ste = getSegment(segment);
+            if (locAdd < ste.limit) {
+                return new MemoryAddress(segment, locAdd);
+            }
+        }
         return null;
     }
     
     public MemoryAddress getPhysicalMemoryAddressFromLogicalMemoryAddress(MemoryAddress m){
-        //To do
-        return null;
+        int segment = m.getDivision();
+        int base = getSegment(segment).base;
+        return new MemoryAddress(base, m.getOffset());
     }
     
     public SegmentTableEntry getSegment(int i){
