@@ -21,9 +21,9 @@ public class FirstFitMemorySlotManager extends FreeMemorySlotManager{
                 break;
             }
         }
-        //if (m != null) {
-        //    m.setSize(m.getSize() - size);
-        //}
+        if (m != null) {
+            m.setSize(m.getSize() - size);
+        }
         return m;
     }
 

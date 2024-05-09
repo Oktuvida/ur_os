@@ -18,9 +18,9 @@ public class WorstFitMemorySlotManager extends FreeMemorySlotManager{
                 m = ms;
             }
         }
-        //if (m != null) {
-        //    m.setSize(m.getSize() - size);
-        //}
+        if (m != null) {
+            m.setSize(m.getSize() - size);
+        }
         return m;
     }
     
