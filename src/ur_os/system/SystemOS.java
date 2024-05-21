@@ -243,6 +243,7 @@ public class SystemOS implements Runnable{
             ps = getProcessAtI(i);
             for (Process p : ps) {
                 os.create_process(p);
+                showFreeMemory();
             } //If the scheduler is preemtive, this action will trigger the extraction from the CPU, is any process is there.
             
             //Actualizar el OS, quien va actualizar el Scheduler            
@@ -297,7 +298,11 @@ public class SystemOS implements Runnable{
         
         showProcesses();
         memory.showNotNullBytes();
+        showFreeMemory();
         
+    }
+
+    public void showFreeMemory(){
         if(PMM == ProcessMemoryManagerType.PAGING){
             System.out.println("Free frame number: "+os.freeFrames.getSize());
         }else{
