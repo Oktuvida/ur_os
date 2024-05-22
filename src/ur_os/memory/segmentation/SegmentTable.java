@@ -82,10 +82,13 @@ public class SegmentTable {
     }
     
     public MemoryAddress getSegmentMemoryAddressFromLocalAddress(int locAdd){
+        int sum_ = 0;
         for (int segment = 0; segment < segmentTable.size(); segment++) {
             SegmentTableEntry ste = getSegment(segment);
-            if (locAdd < ste.limit) {
-                return new MemoryAddress(segment, locAdd);
+            sum_ += ste.getLimit();
+            if (locAdd < sum_) {
+                int offset = locAdd + ste.getLimit() - sum_; // Suma Anterior
+                return new MemoryAddress(segment, offset);
             }
         }
         return null;
