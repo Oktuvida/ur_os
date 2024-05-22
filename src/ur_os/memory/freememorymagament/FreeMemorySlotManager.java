@@ -23,51 +23,54 @@ public abstract class FreeMemorySlotManager extends FreeMemoryManager{
     LinkedList<MemorySlot> list;
     
     public FreeMemorySlotManager(){
-        list = new LinkedList<>();
+        list = new LinkedList();
         list.add(new MemorySlot(0,ur_os.system.SystemOS.MEMORY_SIZE));
     }
     
     public abstract MemorySlot getSlot(int size);
     
+    public void fuseSlots(){
+        int tam = list.size();
+        for (int i = 0; i < tam-1; i++) {
+            if(list.get(i).getEnd()+1 == list.get(i+1).getBase()){//If the slota are contiguous, fuse then
+                list.get(i).addSlot(list.get(i+1));
+                list.remove(list.get(i+1));
+                tam--;
+                i--;
+            }
+        }
+        for (int i = 0; i < tam; i++) {//Check if the are slots with 0 size, and remove them
+            if(list.get(i).getSize() == 0){
+                list.remove(i);
+                tam--;
+                i--;
+            }
+        }
+        
+    }
+    
     private void returnMemorySlot(MemorySlot m){
+        
         
         int i = 0;
         //Find the slot with a higher base address than the one inserted
-        while(list.get(i).getBase() < m.getBase()){
+        while(i<list.size() && list.get(i).getBase() < m.getBase()){
             i++;
         }
-        
-        //If it is not first slot
+        //If it is not the first one, then change the index to have the previous slot
         if(i > 0){
-            i--; //Go to the previous slot
-            
-            //If the returned slot is contiguous to the previous slot, they must be joined
-            if(list.get(i).getEnd() == m.getBase()-1){
-                list.get(i).addSlot(m);
-                //Keep checking if there are more slots to fuse in the list
-                while(i < list.size()-1){
-                    if(list.get(i).getEnd() == list.get(i+1).getBase()-1){
-                        list.get(i).addSlot(list.get(i+1));
-                        list.remove(list.get(i+1));
-                    }else{
-                        i++;
-                    }
-                }
-            }else{
-                //If they are not connected, then the slot will be added after the one with lower base
-                list.add(i+1,m);
-            }
-            
-        }else{
-            //The base is lower than the first slot, thus this should be in the begining in the list.
-            //If the returned slot is contiguous to the first slot, they must be joined
-            if(m.getEnd() == list.getFirst().getBase()-1){
-                list.getFirst().addSlot(m);
-            }else{
-                //If they are not connected, then the slot will be added first in the list
-                list.addFirst(m);
-            }
+            i--;
         }
+        
+        if(i == 0 && list.get(i).getBase() > m.getBase()){//If the slot is the first one and the incoming slot is indeed the lower one
+            list.addFirst(m);
+        }else if (i == list.size()-1){//If the slot is the last one
+            list.getLast().addSlot(m);
+        }else{
+            list.add(i+1, m); //Insert the slot where it is supose to be
+        }
+        
+        fuseSlots(); //Check all the slots and fuse them if possible
         
     }
 
