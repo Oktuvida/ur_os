@@ -38,7 +38,11 @@ public class SystemOS implements Runnable{
     private Memory memory;
     public static final int PAGE_SIZE = 64; //Page size in bytes
     public static final ProcessMemoryManagerType PMM = ProcessMemoryManagerType.SEGMENTATION;
-    public static final FreeMemorySlotManagerType MSM = FreeMemorySlotManagerType.BEST_FIT;
+    public static final FreeMemorySlotManagerType MSM = FreeMemorySlotManagerType.FIRST_FIT;
+    
+    public static final int SEED_SEGMENTS = 7401;
+    public static final int SEED_PROCESS_SIZE = 9630;
+    
     public static final int MEMORY_SIZE = 1_048_576; //1MB
     
     protected ArrayList<Process> processes;
@@ -54,8 +58,10 @@ public class SystemOS implements Runnable{
         execution = new ArrayList();
         processes = new ArrayList();
         //initSimulationQueue();
-        initSimulationQueueSimple();
-        //initSimulationQueueSimpler();
+        //initSimulationQueueSimple();
+        initSimulationQueueSimpler3();
+        
+
         showProcesses();
         this.simType = simType;
     }
@@ -152,6 +158,70 @@ public class SystemOS implements Runnable{
         clock = 0;
     }
     
+    public void initSimulationQueueSimpler3(){
+        
+        
+        Process p = new Process(0,0);
+        p.setSize(200);
+        ProcessBurst temp = new ProcessBurst(5,ProcessBurstType.CPU);    
+        p.addBurst(temp);
+        temp = new ProcessBurst(4,ProcessBurstType.IO);    
+        p.addBurst(temp);
+        temp = new ProcessBurst(3,ProcessBurstType.CPU);    
+        p.addBurst(temp);
+        processes.add(p);
+        
+        
+        //Process 1
+        p = new Process(1,5);
+        p.setSize(500);
+        temp = new ProcessBurst(13,ProcessBurstType.CPU);    
+        p.addBurst(temp);
+        temp = new ProcessBurst(5,ProcessBurstType.IO);    
+        p.addBurst(temp);
+        temp = new ProcessBurst(16,ProcessBurstType.CPU);    
+        p.addBurst(temp);
+        processes.add(p);
+        
+        
+        //Process 2
+        p = new Process(2,6);
+        p.setSize(250);
+        temp = new ProcessBurst(7,ProcessBurstType.CPU);    
+        p.addBurst(temp);
+        temp = new ProcessBurst(3,ProcessBurstType.IO);    
+        p.addBurst(temp);
+        temp = new ProcessBurst(5,ProcessBurstType.CPU);    
+        p.addBurst(temp);
+        processes.add(p);
+        
+        //Process 3
+        p = new Process(3,24);
+        p.setSize(800);
+        temp = new ProcessBurst(4,ProcessBurstType.CPU);    
+        p.addBurst(temp);
+        temp = new ProcessBurst(3,ProcessBurstType.IO);    
+        p.addBurst(temp);
+        temp = new ProcessBurst(7,ProcessBurstType.CPU);    
+        p.addBurst(temp);
+        processes.add(p);
+        
+        //Process 4
+        p = new Process(4,31);
+        p.setSize(600);
+        temp = new ProcessBurst(7,ProcessBurstType.CPU);    
+        p.addBurst(temp);
+        temp = new ProcessBurst(3,ProcessBurstType.IO);    
+        p.addBurst(temp);
+        temp = new ProcessBurst(7,ProcessBurstType.CPU);    
+        p.addBurst(temp);
+        processes.add(p);
+        
+        clock = 0;
+    }
+    
+    
+    
     public void initSimulationQueueSimpler2(){
         
         Process p = new Process(false);
@@ -202,6 +272,8 @@ public class SystemOS implements Runnable{
         clock = 0;
     }
     
+    
+    
     public boolean isSimulationFinished(){
         
         boolean finished = true;
@@ -243,6 +315,8 @@ public class SystemOS implements Runnable{
             ps = getProcessAtI(i);
             for (Process p : ps) {
                 os.create_process(p);
+                System.out.println("Process Created: "+p.getPid()+"\n"+p);
+                
                 showFreeMemory();
             } //If the scheduler is preemtive, this action will trigger the extraction from the CPU, is any process is there.
             
@@ -298,10 +372,10 @@ public class SystemOS implements Runnable{
         
         showProcesses();
         memory.showNotNullBytes();
-        showFreeMemory();
         
+        showFreeMemory();
     }
-
+    
     public void showFreeMemory(){
         if(PMM == ProcessMemoryManagerType.PAGING){
             System.out.println("Free frame number: "+os.freeFrames.getSize());
