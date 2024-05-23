@@ -52,7 +52,6 @@ public class PMM_Paging extends ProcessMemoryManager{
     
     public MemoryAddress getFrameMemoryAddressFromLogicalMemoryAddress(MemoryAddress m){
         int frame = pt.getFrameIdFromPage(m.getDivision());
-
         MemoryAddress ma = new MemoryAddress(frame, m.getOffset());
         return ma;
     }
@@ -62,6 +61,7 @@ public class PMM_Paging extends ProcessMemoryManager{
         MemoryAddress ma1 = getPageMemoryAddressFromLocalAddress(logicalAddress);
         MemoryAddress ma2 = getFrameMemoryAddressFromLogicalMemoryAddress(ma1);
         MemoryAddress ma3 = new MemoryAddress(ma2.getDivision() * PageTable.getPageSize(), ma2.getOffset());
+        System.out.println("Accessing Page " + ma1.getDivision() + " and offset " + ma1.getOffset());
         return ma3.getAddress();
     }
     

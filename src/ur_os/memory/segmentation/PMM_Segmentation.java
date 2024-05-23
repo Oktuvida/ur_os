@@ -60,6 +60,7 @@ public class PMM_Segmentation extends ProcessMemoryManager{
     public int getPhysicalAddress(int logicalAddress){
         MemoryAddress m1 = getSegmentMemoryAddressFromLocalAddress(logicalAddress);
         MemoryAddress m2 = getPhysicalMemoryAddressFromLogicalMemoryAddress(m1);
+        System.out.println("Accessing Segment " + m1.getDivision() + " and offset " + m1.getOffset());
         return m2.getAddress();
     }
     
