@@ -27,6 +27,9 @@ public class WorstFitMemorySlotManager extends FreeMemorySlotManager{
         if (m != null) {
             m.setSize(m.getSize() - size);
             m.setBase(m.getBase() + size);
+            if (m.size == 0) {
+                list.remove(m);
+            }
             m = new MemorySlot(m.getBase() - size, size);
         }
         return m;
